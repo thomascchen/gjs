@@ -8,11 +8,57 @@
 
     <script src="https://cdn.anychart.com/js/latest/graphics.min.js"></script>
     <script>
-      var stage = acgraph.create('stage-container');
+    var stage = acgraph.create("stage-container");
 
-      stage.rect(25, 50, 350, 300);
+    var palette_fill = ['#5f8c3f', '#cb9226', '#515523', '#f2ad33', '#8b0f01'];
+    var palette_stroke = ['#43622c', '#8e661b', '#393b19', '#a97924', '#610b01'];
+
+    var leavesCounter = 0;
+
+    var counterLabel = stage.text(10,10, "Swiped: 0", {fontSize: 20});
+
+    var gameLayer = stage.layer().zIndex(counterLabel.zIndex()-1);
+
+    shakeTree(500);
+
+    function drawLeaf(x, y) {
+      var index = Math.floor(Math.random() * 5);
+      var fill = palette_fill[index];
+      var stroke = palette_stroke[index];
+
+      var scale = Math.round(Math.random() * 30) / 10 + 1;
+      var angle = Math.round(Math.random() * 360 * 100) / 100;
+
+      var path = acgraph.path();
+
+      path.fill(fill).stroke(stroke, 1, 'none', 'round', 'round');
+      var size = 18;
+      path.moveTo(x, y)
+        .curveTo(x + size / 2, y - size / 2, x + 3 * size / 4, y + size / 4, x + size, y)
+        .curveTo(x + 3 * size / 4, y + size / 3, x + size / 3, y + size / 3, x, y);
 
 
+      path.scale(scale, scale, x, y).rotate(angle, x, y);
+
+      path.listen("mouseover", function(){
+        path.remove();
+        counterLabel.text("Swiped: " + leavesCounter++);
+        if (gameLayer.numChildren() < 200) shakeTree(300);
+      });
+
+      return path;
+    };
+
+    function shakeTree(n){
+      stage.suspend();
+      for (var i = 0; i < n; i++) {
+        var x = Math.random() * stage.width()/2 + 50;
+        var y = Math.random() * stage.height()/2 + 50;
+        gameLayer.addChild(drawLeaf(x, y));
+      }
+
+      stage.resume();
+    }
     </script>
   </body>
 </html>
